@@ -15,6 +15,7 @@ import React, {
   ReactNode,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useState,
 } from 'react';
@@ -29,6 +30,7 @@ import ArrayElement from 'typings/Helpers/ArrayElement';
 import { EnhancedSelectInputChanged, InputChanged } from 'typings/inputs';
 import { isMobile as isMobileUtil } from 'Utilities/browser';
 import * as keyCodes from 'Utilities/Constants/keyCodes';
+import translate from 'Utilities/String/translate';
 import TextInput from '../TextInput';
 import HintedSelectInputOption from './HintedSelectInputOption';
 import HintedSelectInputSelectedValue from './HintedSelectInputSelectedValue';
@@ -126,6 +128,7 @@ export interface EnhancedSelectInputProps<
 > {
   className?: string;
   disabledClassName?: string;
+  id?: string;
   name: string;
   value: V;
   values: T[];
@@ -148,6 +151,7 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
   const {
     className = styles.enhancedSelect,
     disabledClassName = styles.isDisabled,
+    id,
     name,
     value,
     values,
@@ -173,6 +177,14 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
 
   const isMultiSelect = Array.isArray(value);
   const selectedOption = getSelectedOption(selectedIndex, values);
+
+  const internalId = useId();
+  const listboxId = `${internalId}-listbox`;
+
+  const activeOptionId =
+    isOpen && selectedIndex >= 0
+      ? `${internalId}-option-${selectedIndex}`
+      : undefined;
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -416,6 +428,10 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
                   ? styles.dropdownArrowContainerDisabled
                   : styles.dropdownArrowContainer
               )}
+              aria-label={translate('Options')}
+              aria-expanded={isOpen}
+              aria-haspopup="listbox"
+              aria-controls={isOpen ? listboxId : undefined}
               onPress={handlePress}
             >
               {isFetching ? (
@@ -433,6 +449,13 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
               hasWarning && styles.hasWarning,
               isDisabled && disabledClassName
             )}
+            id={id}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-haspopup="listbox"
+            aria-controls={isOpen ? listboxId : undefined}
+            aria-owns={isOpen ? listboxId : undefined}
+            aria-activedescendant={activeOptionId}
             isDisabled={isDisabled}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
@@ -469,6 +492,9 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
         <FloatingPortal id="portal-root">
           <Scroller
             ref={refs.setFloating}
+            id={listboxId}
+            role="listbox"
+            aria-multiselectable={isMultiSelect ? true : undefined}
             className={styles.options}
             style={floatingStyles}
             {...getFloatingProps()}
@@ -487,6 +513,7 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
                 <OptionComponent
                   key={v.key}
                   id={v.key}
+                  optionId={`${internalId}-option-${index}`}
                   depth={depth}
                   isSelected={isSelectedItem(index, value, values)}
                   isDisabled={parentSelected}
@@ -516,13 +543,19 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
             innerClassName={styles.optionsInnerModalBody}
             scrollDirection="none"
           >
-            <Scroller className={styles.optionsModalScroller}>
+            <Scroller
+              id={listboxId}
+              role="listbox"
+              aria-multiselectable={isMultiSelect ? true : undefined}
+              className={styles.optionsModalScroller}
+            >
               <div className={styles.mobileCloseButtonContainer}>
                 <Link
                   className={styles.mobileCloseButton}
+                  aria-label={translate('Close')}
                   onPress={handleOptionsModalClose}
                 >
-                  <Icon name={icons.CLOSE} size={18} />
+                  <Icon name={icons.CLOSE} size={18} aria-hidden={true} />
                 </Link>
               </div>
 
@@ -540,6 +573,7 @@ function EnhancedSelectInput<T extends EnhancedSelectInputValue<V>, V>(
                   <OptionComponent
                     key={key}
                     id={key}
+                    optionId={`${internalId}-option-${index}`}
                     depth={depth}
                     isSelected={isSelectedItem(index, value, values)}
                     isMultiSelect={isMultiSelect}
