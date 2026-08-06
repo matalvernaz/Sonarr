@@ -14,6 +14,8 @@ import styles from './TextInput.css';
 
 export interface CommonTextInputProps {
   className?: string;
+  id?: string;
+  ariaDescribedBy?: string;
   readOnly?: boolean;
   autoFocus?: boolean;
   placeholder?: string;
@@ -45,6 +47,8 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps | FileInputProps>(
   (
     {
       className = styles.input,
+      id,
+      ariaDescribedBy,
       type = 'text',
       readOnly = false,
       autoFocus = false,
@@ -160,6 +164,8 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps | FileInputProps>(
     return (
       <input
         ref={combinedRef}
+        id={id}
+        aria-describedby={ariaDescribedBy}
         type={type}
         readOnly={readOnly}
         autoFocus={autoFocus}

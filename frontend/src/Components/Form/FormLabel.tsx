@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React, { ReactNode } from 'react';
 import { Size } from 'Helpers/Props/sizes';
+import { useFormGroup } from './FormGroupContext';
 import styles from './FormLabel.css';
 
 interface FormLabelProps {
@@ -24,6 +25,8 @@ function FormLabel(props: FormLabelProps) {
     isAdvanced = false,
   } = props;
 
+  const formGroup = useFormGroup();
+
   return (
     <label
       className={classNames(
@@ -32,7 +35,7 @@ function FormLabel(props: FormLabelProps) {
         hasError && errorClassName,
         isAdvanced && styles.isAdvanced
       )}
-      htmlFor={name}
+      htmlFor={formGroup ? formGroup.inputId : name}
     >
       {children}
     </label>

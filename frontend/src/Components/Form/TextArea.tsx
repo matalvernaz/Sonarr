@@ -11,6 +11,8 @@ import styles from './TextArea.css';
 
 export interface TextAreaProps {
   className?: string;
+  id?: string;
+  ariaDescribedBy?: string;
   readOnly?: boolean;
   autoFocus?: boolean;
   placeholder?: string;
@@ -26,6 +28,8 @@ export interface TextAreaProps {
 
 function TextArea({
   className = styles.input,
+  id,
+  ariaDescribedBy,
   readOnly = false,
   autoFocus = false,
   placeholder,
@@ -119,6 +123,8 @@ function TextArea({
   return (
     <textarea
       ref={inputRef}
+      id={id}
+      aria-describedby={ariaDescribedBy}
       readOnly={readOnly}
       autoFocus={autoFocus}
       placeholder={placeholder}

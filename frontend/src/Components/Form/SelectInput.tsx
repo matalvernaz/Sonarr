@@ -17,6 +17,8 @@ export interface SelectInputOption
 interface SelectInputProps<T> {
   className?: string;
   disabledClassName?: string;
+  id?: string;
+  ariaDescribedBy?: string;
   name: string;
   value: string | number;
   values: SelectInputOption[];
@@ -31,6 +33,8 @@ interface SelectInputProps<T> {
 function SelectInput<T>({
   className = styles.select,
   disabledClassName = styles.isDisabled,
+  id,
+  ariaDescribedBy,
   name,
   value,
   values,
@@ -53,6 +57,8 @@ function SelectInput<T>({
 
   return (
     <select
+      id={id}
+      aria-describedby={ariaDescribedBy}
       className={classNames(
         className,
         hasError && styles.hasError,

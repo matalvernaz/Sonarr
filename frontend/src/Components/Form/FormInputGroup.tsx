@@ -8,6 +8,7 @@ import AutoCompleteInput, { AutoCompleteInputProps } from './AutoCompleteInput';
 import CaptchaInput, { CaptchaInputProps } from './CaptchaInput';
 import CheckInput, { CheckInputProps } from './CheckInput';
 import FloatInput, { FloatInputProps } from './FloatInput';
+import { useFormGroup } from './FormGroupContext';
 import { FormInputButtonProps } from './FormInputButton';
 import { FormInputGroupProvider } from './FormInputGroupContext';
 import FormInputHelpText from './FormInputHelpText';
@@ -236,6 +237,49 @@ function FormInputGroup<T, C extends InputType>(
   const lastButtonIndex = buttonsArray.length - 1;
   const hasButton = !!buttonsArray.length;
 
+  const formGroup = useFormGroup();
+  const inputId = formGroup?.inputId;
+
+  const ariaDescribedBy = useMemo(() => {
+    if (!inputId) {
+      return undefined;
+    }
+
+    const ids: string[] = [];
+
+    if (!checkInput && helpText) {
+      ids.push(`${inputId}-help-text`);
+    }
+
+    if (!checkInput) {
+      helpTexts.forEach((_, index) => {
+        ids.push(`${inputId}-help-text-${index}`);
+      });
+    }
+
+    if ((!checkInput || helpText) && helpTextWarning) {
+      ids.push(`${inputId}-help-text-warning`);
+    }
+
+    errors.forEach((_, index) => {
+      ids.push(`${inputId}-error-${index}`);
+    });
+
+    warnings.forEach((_, index) => {
+      ids.push(`${inputId}-warning-${index}`);
+    });
+
+    return ids.length ? ids.join(' ') : undefined;
+  }, [
+    inputId,
+    checkInput,
+    helpText,
+    helpTexts,
+    helpTextWarning,
+    errors,
+    warnings,
+  ]);
+
   return (
     <FormInputGroupProvider
       setClientErrors={setClientErrors}
@@ -247,6 +291,8 @@ function FormInputGroup<T, C extends InputType>(
             {/* @ts-expect-error - types are validated already */}
             <InputComponent
               className={inputClassName}
+              id={inputId}
+              ariaDescribedBy={ariaDescribedBy}
               helpText={helpText}
               helpTextWarning={helpTextWarning}
               hasError={hasError}
@@ -290,7 +336,12 @@ function FormInputGroup<T, C extends InputType>(
         </div> */}
         </div>
 
-        {!checkInput && helpText ? <FormInputHelpText text={helpText} /> : null}
+        {!checkInput && helpText ? (
+          <FormInputHelpText
+            id={inputId ? `${inputId}-help-text` : undefined}
+            text={helpText}
+          />
+        ) : null}
 
         {!checkInput && helpTexts ? (
           <div>
@@ -298,6 +349,7 @@ function FormInputGroup<T, C extends InputType>(
               return (
                 <FormInputHelpText
                   key={index}
+                  id={inputId ? `${inputId}-help-text-${index}` : undefined}
                   text={text}
                   isCheckInput={checkInput}
                 />
@@ -307,7 +359,11 @@ function FormInputGroup<T, C extends InputType>(
         ) : null}
 
         {(!checkInput || helpText) && helpTextWarning ? (
-          <FormInputHelpText text={helpTextWarning} isWarning={true} />
+          <FormInputHelpText
+            id={inputId ? `${inputId}-help-text-warning` : undefined}
+            text={helpTextWarning}
+            isWarning={true}
+          />
         ) : null}
 
         {helpLink ? <Link to={helpLink}>{translate('MoreInfo')}</Link> : null}
@@ -316,6 +372,7 @@ function FormInputGroup<T, C extends InputType>(
           return 'errorMessage' in error ? (
             <FormInputHelpText
               key={index}
+              id={inputId ? `${inputId}-error-${index}` : undefined}
               text={error.errorMessage}
               link={error.infoLink}
               tooltip={error.detailedDescription}
@@ -325,6 +382,7 @@ function FormInputGroup<T, C extends InputType>(
           ) : (
             <FormInputHelpText
               key={index}
+              id={inputId ? `${inputId}-error-${index}` : undefined}
               text={error.message}
               isError={true}
               isCheckInput={checkInput}
@@ -336,6 +394,7 @@ function FormInputGroup<T, C extends InputType>(
           return 'errorMessage' in warning ? (
             <FormInputHelpText
               key={index}
+              id={inputId ? `${inputId}-warning-${index}` : undefined}
               text={warning.errorMessage}
               link={warning.infoLink}
               tooltip={warning.detailedDescription}
@@ -345,6 +404,7 @@ function FormInputGroup<T, C extends InputType>(
           ) : (
             <FormInputHelpText
               key={index}
+              id={inputId ? `${inputId}-warning-${index}` : undefined}
               text={warning.message}
               isWarning={true}
               isCheckInput={checkInput}

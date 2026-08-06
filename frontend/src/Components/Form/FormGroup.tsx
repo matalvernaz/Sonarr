@@ -1,6 +1,12 @@
 import classNames from 'classnames';
-import React, { Children, ComponentPropsWithoutRef, ReactNode } from 'react';
+import React, {
+  Children,
+  ComponentPropsWithoutRef,
+  ReactNode,
+  useId,
+} from 'react';
 import { Size } from 'Helpers/Props/sizes';
+import { FormGroupProvider } from './FormGroupContext';
 import styles from './FormGroup.css';
 
 interface FormGroupProps extends ComponentPropsWithoutRef<'div'> {
@@ -21,6 +27,8 @@ function FormGroup(props: FormGroupProps) {
     ...otherProps
   } = props;
 
+  const inputId = useId();
+
   if (!advancedSettings && isAdvanced) {
     return null;
   }
@@ -28,15 +36,17 @@ function FormGroup(props: FormGroupProps) {
   const childProps = isAdvanced ? { isAdvanced } : {};
 
   return (
-    <div className={classNames(className, styles[size])} {...otherProps}>
-      {Children.map(children, (child) => {
-        if (!React.isValidElement(child)) {
-          return child;
-        }
+    <FormGroupProvider inputId={inputId}>
+      <div className={classNames(className, styles[size])} {...otherProps}>
+        {Children.map(children, (child) => {
+          if (!React.isValidElement(child)) {
+            return child;
+          }
 
-        return React.cloneElement(child, childProps);
-      })}
-    </div>
+          return React.cloneElement(child, childProps);
+        })}
+      </div>
+    </FormGroupProvider>
   );
 }
 
